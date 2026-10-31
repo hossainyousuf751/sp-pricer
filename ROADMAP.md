@@ -8,7 +8,7 @@ scope and acceptance criteria. A milestone is done when every criterion is ticke
 
 ## Priority order
 
-1. 🔜 **T1** Repository and tooling
+1. ✅ **T1** Repository and tooling
 2. 🔜 **M8** Issuer funding spread: the biggest pricing error left
 3. ⬜ **M3** Variance reduction
 4. ⬜ **M6** Realistic dynamics (skew)
@@ -42,14 +42,14 @@ Known limit: bridges are treated as independent across assets (about 0.03 bias o
 
 ---
 
-## 🔜 T1 Repository and tooling
+## ✅ T1 Repository and tooling
 
 **Goal:** every change is versioned and checked automatically.
 
-- [ ] `git init`, first commit, push to GitHub; fix the `<your-username>` badge in README
-- [ ] Add `ruff` (lint and import sorting) to `[dev]` and CI, configured with line length 120
-- [ ] Add `pytest-cov` to CI and report coverage, without failing the build on it yet
-- [ ] Add a `CHANGELOG.md` that records every change to default prices
+- [x] `git init`, first commit, push to GitHub; fix the `<your-username>` badge in README
+- [x] Add `ruff` (lint and import sorting) to `[dev]` and CI, configured with line length 120
+- [x] Add `pytest-cov` to CI and report coverage, without failing the build on it yet (95% at T1)
+- [x] Add a `CHANGELOG.md` that records every change to default prices
 
 ## 🔜 M8 Issuer funding spread
 

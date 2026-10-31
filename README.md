@@ -88,7 +88,7 @@ The test suite checks the engine against cases with known answers:
 
 ## Roadmap
 
-Done: M1 core engine, M2 Greeks, M4 continuous barriers. Next: tooling, issuer funding spread,
+Done: M1 core engine, M2 Greeks, M4 continuous barriers, T1 tooling. Next: issuer funding spread,
 variance reduction. Full plan with acceptance criteria in [ROADMAP.md](ROADMAP.md); how to
 contribute in [CONTRIBUTING.md](CONTRIBUTING.md).
 
