@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from sppricer.market import Market
-from sppricer.models import simulate_gbm
+from sppricer.models import GBMModel, PathModel, simulate_gbm
 from sppricer.products.base import Product
 
 
@@ -27,13 +27,23 @@ class PricingResult:
 
 
 def price_mc(product: Product, market: Market, n_paths: int = 100_000,
-             seed: int | None = None, antithetic: bool = True) -> PricingResult:
-    """Price a product by Monte Carlo under GBM.
+             seed: int | None = None, antithetic: bool = True, model: PathModel | None = None) -> PricingResult:
+    """Price a product by Monte Carlo, under GBM unless another PathModel is given.
 
     With antithetic sampling, each (Z, -Z) pair is averaged first so the
     standard error reflects the true (reduced) variance of the estimator.
+
+    Barrier monitoring other than "european" uses a Brownian-bridge correction
+    that assumes flat GBM vol, so it raises under any other model.
     """
-    paths = simulate_gbm(market, product.simulation_times, n_paths, seed, antithetic)
+    if model is None:
+        paths = simulate_gbm(market, product.simulation_times, n_paths, seed, antithetic)
+    else:
+        monitoring = getattr(product, "barrier_monitoring", "european")
+        if monitoring != "european" and not isinstance(model, GBMModel):
+            raise ValueError(f"barrier_monitoring={monitoring!r} assumes flat-vol GBM between dates; "
+                             f"use 'european' with {type(model).__name__}")
+        paths = model.simulate(market, product.simulation_times, n_paths, seed, antithetic)
     pv = product.discounted_payoff(paths, market)
     if antithetic:
         half = n_paths // 2

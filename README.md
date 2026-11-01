@@ -59,12 +59,40 @@ Broadie-Glasserman-Kou barrier shift. The tests check this against a brute-force
 daily simulation using the same random paths. Daily monitoring takes about 3.3
 points off the example note, so a maturity-only barrier noticeably overstates its value.
 
+## Local volatility and term structure (v0.2, M6)
+
+Every product here is short a down-and-in put, so its value depends on the put skew, which flat
+vol ignores. `price_mc(product, market, model=...)` takes any `PathModel`: `GBMModel` (the default,
+identical numbers) or `LocalVolModel`, a Dupire (1994) local-vol simulation.
+
+```python
+from sppricer import LocalVolModel, price_mc
+
+model = LocalVolModel([surface_a, surface_b], dt=1 / 252)  # any objects with local_vol(K, T) and .curve
+price_mc(note, market, n_paths=200_000, seed=42, model=model)
+```
+
+- **No dependency on a surface library.** A surface is anything with `local_vol(K, T)` (absolute
+  strike, years) and a `curve` with `forward(T)` / `discount(T)` (the `LocalVolSource` protocol).
+  [quant-stack](https://github.com/hossainyousuf751/quant-stack) wires in volsurface's SSVI surfaces.
+- **Scheme.** Log-Euler on a grid of every dt plus every observation date. Each step drifts by
+  ln F(t+dt) − ln F(t) − ½σ²dt, so the asset tracks its forward curve, with σ = local vol at the
+  current spot and the step's mid-time. Correlation uses the market's Cholesky factor, and
+  antithetic sampling is kept, so standard errors and common random numbers work as before.
+  The bias is O(dt): the tests check that it shrinks when dt halves.
+- **Term structure.** `Market(..., curves=(...), discount_curve=...)` replaces the flat rate and
+  dividend yield by forward and discount curves. GBM then drifts along each asset's forward, and
+  products discount with `market.discount`.
+- **Barriers.** Daily or continuous monitoring uses a Brownian-bridge correction that assumes
+  flat GBM vol between dates, so `price_mc` raises under local vol. With local vol, use
+  `"european"` monitoring, or `LocalVolModel.simulate_grid` to monitor on every step.
+
 ## Design
 
 | Module | Responsibility |
 |---|---|
-| `market.py` | Immutable market snapshot: spots, flat vols, dividend yields, rate, correlation (validated PSD) |
-| `models.py` | Correlated GBM via Cholesky, exact log-step on observation dates only, antithetic variates |
+| `market.py` | Immutable market snapshot: spots, flat vols, dividend yields, rate (or forward/discount curves), correlation (validated PSD) |
+| `models.py` | Correlated GBM via Cholesky, exact log-step on observation dates only, antithetic variates; Dupire local vol (log-Euler) behind the same `PathModel` interface |
 | `products/` | Each product declares its simulation dates and a vectorized `discounted_payoff(paths, market)` |
 | `engine.py` | MC pricing with correct standard errors under antithetic sampling |
 | `greeks.py` | Central-difference Greeks with common random numbers |
@@ -88,18 +116,27 @@ The test suite checks the engine against cases with known answers:
 
 ## Roadmap
 
-Done: M1 core engine, M2 Greeks, M4 continuous barriers, T1 tooling. Next: issuer funding spread,
-variance reduction. Full plan with acceptance criteria in [ROADMAP.md](ROADMAP.md); how to
+Done: M1 core engine, M2 Greeks, M4 continuous barriers, M6 local vol and curves, T1 tooling.
+Next: issuer funding spread, variance reduction. Full plan with acceptance criteria in [ROADMAP.md](ROADMAP.md); how to
 contribute in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Limitations
 
-Flat volatility and no skew understate the value of the short down-and-in put,
-so fair values here are biased upward relative to a skew-aware model (M6).
+Under the default flat volatility, the skew is ignored, which understates the value of the
+short down-and-in put. Fair values are therefore biased upward relative to a skew-aware model.
+`LocalVolModel` removes that bias given a surface. Under local vol, `bump_greeks` vega is zero,
+so bump the surface instead. Barrier monitoring must be European.
 Dividends are continuous yields, and there is no issuer credit spread (funding
 discounting), which matters materially for real notes. For baskets, the
 Brownian-bridge correction treats each asset's path between observation dates as
 independent, which slightly overstates knock-in on coarse grids (about 0.03 on the test basket).
+
+## Part of quant-stack
+
+sp-pricer is one of five independent libraries linked in
+[quant-stack](https://github.com/hossainyousuf751/quant-stack). There, volsurface surfaces drive
+`LocalVolModel` (study S1, skew and the autocallable), and risk-lab revalues sp-pricer notes for
+VaR. sp-pricer itself depends only on numpy.
 
 ## Disclaimer
 

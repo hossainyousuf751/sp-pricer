@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sppricer"
-version = "0.1.0"
+version = "0.2.0"
 description = "Monte Carlo pricing and risk for structured products (autocallables, reverse convertibles)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,6 +18,8 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["slow: README-scale runs (seconds to minutes); run with -m slow"]
+addopts = "-m 'not slow'"
 
 [tool.ruff]
 line-length = 120

@@ -3,8 +3,8 @@
 from sppricer.analytics import bs_delta, bs_price, bs_vega
 from sppricer.engine import PricingResult, price_mc
 from sppricer.greeks import Greeks, bump_greeks
-from sppricer.market import Market, Underlying
-from sppricer.models import simulate_gbm
+from sppricer.market import Curve, Market, Underlying
+from sppricer.models import GBMModel, LocalVolModel, LocalVolSource, PathModel, simulate_gbm
 from sppricer.products import (
     BarrierReverseConvertible,
     EuropeanOption,
@@ -14,9 +14,14 @@ from sppricer.products import (
 
 __all__ = [
     "BarrierReverseConvertible",
+    "Curve",
     "EuropeanOption",
+    "GBMModel",
     "Greeks",
+    "LocalVolModel",
+    "LocalVolSource",
     "Market",
+    "PathModel",
     "PhoenixAutocallable",
     "PricingResult",
     "Product",
