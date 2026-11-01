@@ -9,9 +9,10 @@ scope and acceptance criteria. A milestone is done when every criterion is ticke
 ## Priority order
 
 1. ✅ **T1** Repository and tooling
-2. 🔜 **M8** Issuer funding spread: the biggest pricing error left
-3. ⬜ **M3** Variance reduction
-4. ⬜ **M6** Realistic dynamics (skew)
+2. ✅ **M6** Realistic dynamics (skew): moved ahead of M8 (2026-11-01) because quant-stack's
+   local-vol link needed it, and skew moves the example note by 2.5–5 points, more than funding
+3. 🔜 **M8** Issuer funding spread
+4. ⬜ **M3** Variance reduction
 5. ⬜ **M5** Better Greeks
 6. ⬜ **M9** Dates and calendars
 7. ⬜ **M7** Term-sheet case studies (needs M6, M8 and M9)
@@ -77,15 +78,19 @@ cash flows. Simulation drift stays at the risk-free rate.
       reason justifies `scipy.stats.qmc`
 - [ ] Convergence plot script in `examples/`; matplotlib stays optional, never a runtime dependency
 
-## ⬜ M6 Realistic dynamics
+## ✅ M6 Realistic dynamics
 
 **Goal:** stop undervaluing the down-and-in put caused by flat vol.
 
-- [ ] Term structure of rates (piecewise-flat) with flat as the default
-- [ ] Heston or local vol behind the same `simulate_*` → paths interface
-- [ ] Vanilla prices match the model's semi-analytic or calibrated surface within 4 SE
-- [ ] Flat-vol limit reproduces GBM prices
-- [ ] README shows the skew effect on the example note
+- [x] Term structure with flat as the default: any `Curve` (forward, discount) per underlying, and a
+      discount curve on `Market`. This is more general than piecewise-flat.
+- [x] Local vol behind the same paths interface: `PathModel`, `GBMModel`, `LocalVolModel`, and
+      `price_mc(model=)`. Heston is not done.
+- [x] Vanilla prices match the calibrated surface within 3 SE. This is tested in
+      [quant-stack](https://github.com/hossainyousuf751/quant-stack) against a volsurface SSVI surface,
+      because sp-pricer has no surface of its own. Here, a constant local vol matches Black-Scholes.
+- [x] Flat-vol limit reproduces GBM prices (`tests/test_models.py`)
+- [x] Skew effect on the example note: quant-stack study S1
 
 ## ⬜ M5 Better Greeks
 

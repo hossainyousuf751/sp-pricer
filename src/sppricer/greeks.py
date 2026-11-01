@@ -8,6 +8,7 @@ import numpy as np
 
 from sppricer.engine import price_mc
 from sppricer.market import Market
+from sppricer.models import PathModel
 from sppricer.products.base import Product
 
 
@@ -22,15 +23,18 @@ class Greeks:
 
 def bump_greeks(product: Product, market: Market, n_paths: int = 100_000, seed: int = 0,
                 spot_bump: float = 0.01, vol_bump: float = 0.01,
-                rate_bump: float = 0.0001) -> Greeks:
+                rate_bump: float = 0.0001, model: PathModel | None = None) -> Greeks:
     """Central-difference Greeks, reusing the same seed for every revaluation.
 
     Common random numbers cancel most Monte Carlo noise between bumped prices.
     Gamma of digital/barrier features is still noisy with bump-and-reprice;
     see the roadmap (pathwise / likelihood-ratio estimators, payoff smoothing).
+
+    `model` is passed to price_mc. Vega bumps the underlyings' flat vols, so under
+    a model that ignores them (LocalVolModel) it is zero: bump the surface instead.
     """
     def pv(m: Market) -> float:
-        return price_mc(product, m, n_paths=n_paths, seed=seed).price
+        return price_mc(product, m, n_paths=n_paths, seed=seed, model=model).price
 
     base = pv(market)
     n = market.n_assets
