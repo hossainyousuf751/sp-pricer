@@ -10,7 +10,8 @@ actually worth compared with its issue price?**
 ## Quickstart
 
 ```bash
-pip install -e ".[dev]"
+pip install sppricer                       # from PyPI
+pip install -e ".[dev]"                    # or, from a clone, for development
 pytest
 python examples/price_worst_of_phoenix.py
 ```
