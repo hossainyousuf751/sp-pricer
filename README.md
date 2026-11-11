@@ -117,8 +117,8 @@ The test suite checks the engine against cases with known answers:
 ## Roadmap
 
 Done: M1 core engine, M2 Greeks, M4 continuous barriers, M6 local vol and curves, T1 tooling.
-Next: issuer funding spread, variance reduction. Full plan with acceptance criteria in [ROADMAP.md](ROADMAP.md); how to
-contribute in [CONTRIBUTING.md](CONTRIBUTING.md).
+Next: issuer funding spread, variance reduction. Full plan with acceptance criteria in [ROADMAP.md](https://github.com/hossainyousuf751/sp-pricer/blob/main/ROADMAP.md); how to
+contribute in [CONTRIBUTING.md](https://github.com/hossainyousuf751/sp-pricer/blob/main/CONTRIBUTING.md).
 
 ## Limitations
 

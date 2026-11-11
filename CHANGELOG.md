@@ -2,6 +2,13 @@
 
 Every change to default prices must be recorded here (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
+## 0.2.1 (2026-11-11)
+
+First release on PyPI (`pip install sppricer`). No code changes; prices are identical to 0.2.0.
+- MIT licence (`LICENSE`), declared in the package metadata.
+- `publish` workflow: a version bump merged to main tags, releases and uploads to PyPI.
+- README links are absolute, so they work on PyPI.
+
 ## 0.2.0 (2026-11-01)
 
 ### Added
