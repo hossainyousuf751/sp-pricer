@@ -90,6 +90,18 @@ A change is complete when all of these hold:
 - [ ] ROADMAP.md shows the milestone's status, with acceptance criteria ticked.
 - [ ] No new runtime dependency, or a written reason for one.
 
+## Releasing
+
+Versions follow semantic versioning in `pyproject.toml`. A release is one PR: add a `## X.Y.Z (date)`
+section to `CHANGELOG.md` and bump `version`. When it merges, `.github/workflows/publish.yml` builds the
+package, creates the `vX.Y.Z` tag and GitHub release (notes = that changelog section) and uploads to PyPI.
+It does nothing if the version is already tagged, and stops before releasing anything if the changelog
+section is missing. PyPI versions cannot be re-uploaded, so a mistake means a new patch version.
+
+One-time PyPI setup (trusted publishing, no token): on pypi.org, *Your account → Publishing → Add a new
+pending publisher* with project `sppricer`, owner `hossainyousuf751`, repository `sp-pricer`, workflow
+`publish.yml`, environment `pypi`.
+
 ## Git workflow
 
 - Branch per change: `m3-control-variates`, `fix-vega-floor`.
