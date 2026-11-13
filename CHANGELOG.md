@@ -2,6 +2,14 @@
 
 Every change to default prices must be recorded here (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
+## 0.4.0 (2026-11-14)
+
+### Added
+- `PhoenixAutocallable(autocall_indices=...)`: call only on the listed observation dates, for notes
+  with monthly coupons and quarterly calls, as many US pricing supplements specify. Default `None`
+  keeps every date from `first_autocall_index` callable: **no change to default prices**. Listing
+  every date from the first call date reproduces the default exactly (tested).
+
 ## 0.3.0 (2026-11-14)
 
 ### Added

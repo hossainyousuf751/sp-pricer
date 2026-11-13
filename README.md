@@ -46,6 +46,12 @@ Example output (3-year, quarterly, 8% p.a. memory coupon, 60% European protectio
 The investor is short volatility and short gamma, which is the defining risk of
 these products: the coupon is compensation for the down-and-in put the investor sells.
 
+## Call dates
+
+`PhoenixAutocallable(..., autocall_indices=(2, 5, 8))` makes the note callable only on those
+observation dates. US notes often observe the coupon monthly but allow a call only quarterly. By
+default every date from `first_autocall_index` on is callable, as before.
+
 ## Barrier monitoring
 
 Both structured products take `barrier_monitoring`:
