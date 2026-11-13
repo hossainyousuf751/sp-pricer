@@ -2,6 +2,16 @@
 
 Every change to default prices must be recorded here (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
+## 0.3.0 (2026-11-14)
+
+### Added
+- M5: `lr_greeks(product, market, ...) -> LRGreeks`, likelihood-ratio delta, gamma and vega under GBM
+  with standard errors (Broadie and Glasserman 1996). It works on every product unchanged, including
+  digital coupons, autocalls and barriers. For continuous or daily monitoring, vega includes the
+  Brownian-bridge term. On the README worst-of note, gamma standard error is 2.0× / 3.7× smaller than
+  bump-and-reprice; delta and vega stay better by bumping (measured in `examples/greeks_lr_vs_bump.py`).
+- **No change to default prices or to `bump_greeks`.**
+
 ## 0.2.1 (2026-11-11)
 
 First release on PyPI (`pip install sppricer`). No code changes; prices are identical to 0.2.0.
