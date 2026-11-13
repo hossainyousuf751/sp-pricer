@@ -13,7 +13,7 @@ scope and acceptance criteria. A milestone is done when every criterion is ticke
    local-vol link needed it, and skew moves the example note by 2.5–5 points, more than funding
 3. 🔜 **M8** Issuer funding spread
 4. ⬜ **M3** Variance reduction
-5. ⬜ **M5** Better Greeks
+5. ✅ **M5** Better Greeks
 6. ⬜ **M9** Dates and calendars
 7. ⬜ **M7** Term-sheet case studies (needs M6, M8 and M9)
 
@@ -92,13 +92,18 @@ cash flows. Simulation drift stays at the risk-free rate.
 - [x] Flat-vol limit reproduces GBM prices (`tests/test_models.py`)
 - [x] Skew effect on the example note: quant-stack study S1
 
-## ⬜ M5 Better Greeks
+## ✅ M5 Better Greeks
 
 **Goal:** stable gamma and vega for digital and barrier features.
 
-- [ ] Pathwise delta and vega for smooth payoffs, matching Black-Scholes within 4 SE
-- [ ] Likelihood-ratio or smoothed estimator for digital coupons
-- [ ] Gamma standard error on the README example falls clearly versus bump-and-reprice (measured)
+- [x] Delta and vega for smooth payoffs matching Black-Scholes within 4 SE. Met by `lr_greeks` (tested).
+  No separate pathwise estimator was added: for smooth payoffs `bump_greeks` with common random numbers
+  is the pathwise estimator in the limit of small bumps, and it measured lower variance than
+  likelihood ratio for delta and vega.
+- [x] Likelihood-ratio estimator for digital coupons: `lr_greeks`, matching closed-form digital delta
+  and gamma within 4 SE.
+- [x] Gamma standard error on the README example falls 2.0× / 3.7× versus bump-and-reprice
+  (`examples/greeks_lr_vs_bump.py`, 20 seeds).
 
 ## ⬜ M9 Dates and calendars
 

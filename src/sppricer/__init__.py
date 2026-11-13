@@ -2,7 +2,7 @@
 
 from sppricer.analytics import bs_delta, bs_price, bs_vega
 from sppricer.engine import PricingResult, price_mc
-from sppricer.greeks import Greeks, bump_greeks
+from sppricer.greeks import Greeks, LRGreeks, bump_greeks, lr_greeks
 from sppricer.market import Curve, Market, Underlying
 from sppricer.models import GBMModel, LocalVolModel, LocalVolSource, PathModel, simulate_gbm
 from sppricer.products import (
@@ -18,6 +18,7 @@ __all__ = [
     "EuropeanOption",
     "GBMModel",
     "Greeks",
+    "LRGreeks",
     "LocalVolModel",
     "LocalVolSource",
     "Market",
@@ -30,6 +31,7 @@ __all__ = [
     "bs_price",
     "bs_vega",
     "bump_greeks",
+    "lr_greeks",
     "price_mc",
     "simulate_gbm",
 ]

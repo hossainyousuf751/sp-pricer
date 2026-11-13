@@ -88,6 +88,36 @@ price_mc(note, market, n_paths=200_000, seed=42, model=model)
   flat GBM vol between dates, so `price_mc` raises under local vol. With local vol, use
   `"european"` monitoring, or `LocalVolModel.simulate_grid` to monitor on every step.
 
+## Likelihood-ratio Greeks (v0.3, M5)
+
+Bump-and-reprice gamma is noisy for these notes: the coupon, the autocall and the barrier are all
+digital, so a 1% spot bump moves only the few paths near a trigger. `lr_greeks` uses the
+likelihood-ratio method (Broadie and Glasserman 1996). It differentiates the density of the simulated
+path rather than the payoff, so it works on every product unchanged, and each Greek comes with a
+standard error.
+
+```python
+from sppricer import lr_greeks
+g = lr_greeks(note, market, n_paths=200_000, seed=42)
+g.gamma, g.gamma_se           # also g.delta, g.vega and their _se, in the units of bump_greeks
+```
+
+Measured on the worst-of Phoenix above, 200,000 paths per run (`examples/greeks_lr_vs_bump.py`). Bump
+standard errors are the spread over 20 seeds, because bump-and-reprice gives none:
+
+| Greek, asset A / B | Bump SE | LR SE | Better |
+|---|---|---|---|
+| gamma | 0.0083 / 0.0426 | 0.0042 / 0.0115 | **LR, 2.0× / 3.7× smaller** |
+| delta | 0.0035 / 0.0073 | 0.0061 / 0.0102 | bump |
+| vega per vol point | 0.0047 / 0.0046 | 0.066 / 0.055 | bump, about 10× |
+
+Use `lr_greeks` for gamma and `bump_greeks` for delta and vega. The vega weight sums noise over all
+12 observation steps; delta is smooth enough that common random numbers already make bumping
+effectively pathwise. An LR run also costs one simulation instead of eleven, so it was about 6×
+faster here (0.6 s against 3.5 s). On this note LR's reported gamma SE is conservative: the spread
+over seeds is about 0.7 of it. The estimator is validated against closed forms: call and digital
+delta and gamma, correlated baskets, multi-step vega, and the Brownian-bridge vega term.
+
 ## Design
 
 | Module | Responsibility |
@@ -96,7 +126,7 @@ price_mc(note, market, n_paths=200_000, seed=42, model=model)
 | `models.py` | Correlated GBM via Cholesky, exact log-step on observation dates only, antithetic variates; Dupire local vol (log-Euler) behind the same `PathModel` interface |
 | `products/` | Each product declares its simulation dates and a vectorized `discounted_payoff(paths, market)` |
 | `engine.py` | MC pricing with correct standard errors under antithetic sampling |
-| `greeks.py` | Central-difference Greeks with common random numbers |
+| `greeks.py` | Central-difference Greeks with common random numbers; likelihood-ratio delta, gamma and vega with standard errors |
 | `analytics.py` | Black-Scholes closed forms used as benchmarks |
 
 Adding a product means implementing two methods; the engine and Greeks work unchanged.
@@ -108,6 +138,8 @@ The test suite checks the engine against cases with known answers:
 - European call/put prices converge to Black-Scholes within 4 standard errors.
 - Put-call parity holds; antithetic sampling reduces standard error.
 - Bump-and-reprice delta and vega match Black-Scholes analytics.
+- Likelihood-ratio delta, gamma and vega match Black-Scholes (call) and closed-form digital Greeks
+  within 4 standard errors, with z-scores over 10 fresh seeds averaging about 0 with spread about 1.
 - Limit cases: unreachable barriers give a zero-coupon bond; zero barriers give an immediate
   call; full downside with no coupons gives the discounted forward; a zero-barrier BRC gives a coupon bond.
 - Monotonicity: memory coupons are worth more; worst-of is cheaper than single-asset;
@@ -117,7 +149,8 @@ The test suite checks the engine against cases with known answers:
 
 ## Roadmap
 
-Done: M1 core engine, M2 Greeks, M4 continuous barriers, M6 local vol and curves, T1 tooling.
+Done: M1 core engine, M2 Greeks, M4 continuous barriers, M5 likelihood-ratio Greeks, M6 local vol and
+curves, T1 tooling.
 Next: issuer funding spread, variance reduction. Full plan with acceptance criteria in [ROADMAP.md](https://github.com/hossainyousuf751/sp-pricer/blob/main/ROADMAP.md); how to
 contribute in [CONTRIBUTING.md](https://github.com/hossainyousuf751/sp-pricer/blob/main/CONTRIBUTING.md).
 
