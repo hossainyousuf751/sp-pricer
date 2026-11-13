@@ -31,6 +31,11 @@ class PhoenixAutocallable(Product):
         "daily", the protection barrier is a knock-in watched over the whole
         life: if any asset touched it and W < 1, repay notional * W.
 
+    autocall_indices (optional) lists the observation dates on which the note can be called, for
+    notes whose coupon is observed more often than the call (e.g. monthly coupons, quarterly calls).
+    When set it replaces first_autocall_index; by default every date from first_autocall_index on is
+    callable, as before.
+
     Barriers are expressed as fractions of the initial level (0.7 = 70%).
     coupon_rate is per observation period (e.g. 0.02 for 2% per quarter).
     """
@@ -45,6 +50,7 @@ class PhoenixAutocallable(Product):
     first_autocall_index: int = 0
     notional: float = 100.0
     barrier_monitoring: str = "european"
+    autocall_indices: tuple[int, ...] | None = None
 
     def __post_init__(self) -> None:
         validate_schedule(self.observation_times)
@@ -54,6 +60,11 @@ class PhoenixAutocallable(Product):
                 raise ValueError(f"{name} must be non-negative")
         if not 0 <= self.first_autocall_index < len(self.observation_times):
             raise ValueError("first_autocall_index out of range")
+        if self.autocall_indices is not None:
+            idx = tuple(int(i) for i in self.autocall_indices)
+            if list(idx) != sorted(set(idx)) or not all(0 <= i < len(self.observation_times) - 1 for i in idx):
+                raise ValueError("autocall_indices must be increasing indices of observation dates before maturity")
+            object.__setattr__(self, "autocall_indices", idx)
 
     @property
     def simulation_times(self) -> np.ndarray:
@@ -63,6 +74,11 @@ class PhoenixAutocallable(Product):
         worst = worst_performance(paths, self.initial_levels)
         n_paths, n_obs = worst.shape
         alive = np.ones(n_paths, dtype=bool)
+        callable_ = np.zeros(n_obs, dtype=bool)
+        if self.autocall_indices is None:
+            callable_[self.first_autocall_index:] = True
+        else:
+            callable_[list(self.autocall_indices)] = True
         missed = np.zeros(n_paths, dtype=int)
         pv = np.zeros(n_paths)
 
@@ -83,7 +99,7 @@ class PhoenixAutocallable(Product):
                                                 self.protection_barrier, market, self.barrier_monitoring)
                     redemption = self.notional * (1.0 - p_ki * np.maximum(1.0 - w, 0.0))
                 pv += np.where(alive, redemption, 0.0) * df
-            elif i >= self.first_autocall_index:
+            elif callable_[i]:
                 called = alive & (w >= self.autocall_barrier)
                 pv += np.where(called, self.notional, 0.0) * df
                 alive &= ~called
